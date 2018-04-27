@@ -17,7 +17,7 @@
 /// Toggle debugging mode
 #define DEBUG			/// By default UART0 (PTB0-PTB1) is used
 
-#define BATTERY_TYPE	12V		// 24V
+#define BATTERY_TYPE	12		// 24
 
 // 12V AGM Battery
 #define BATTERY_12V_MIN_CHARGING_VOLTAGE	(14.10f)

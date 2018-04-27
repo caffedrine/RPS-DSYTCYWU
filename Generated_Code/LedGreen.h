@@ -7,7 +7,7 @@
 **     Version     : Component 02.086, Driver 01.00, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2018-04-27, 17:07, # CodeGen: 10
+**     Date/Time   : 2018-04-27, 17:17, # CodeGen: 12
 **     Abstract    :
 **         This component "BitIO" implements an one-bit input/output.
 **         It uses one bit/pin of a port.
@@ -27,6 +27,7 @@
 **          Optimization for                               : speed
 **     Contents    :
 **         ClrVal - void LedGreen_ClrVal(void);
+**         SetVal - void LedGreen_SetVal(void);
 **         NegVal - void LedGreen_NegVal(void);
 **
 **     Copyright : 1997 - 2015 Freescale Semiconductor, Inc. 
@@ -107,6 +108,17 @@ extern "C" {
 ** ===================================================================
 */
 #define LedGreen_ClrVal() (BitIoLdd2_ClrVal(BitIoLdd2_DeviceData))
+
+/*
+** ===================================================================
+**     Method      :  LedGreen_SetVal (component BitIO)
+**     Description :
+**         This method sets (sets to one) the output value.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+#define LedGreen_SetVal() (BitIoLdd2_SetVal(BitIoLdd2_DeviceData))
 
 /*
 ** ===================================================================

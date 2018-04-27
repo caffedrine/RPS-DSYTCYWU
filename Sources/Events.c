@@ -34,11 +34,13 @@ extern "C" {
 #endif 
 
 
-
-
 /* User includes (#include below this line is not maintained by Processor Expert) */
 #include <stdint.h>
 #include "Common.h"
+#include "Errors.h"
+
+// Defined in main
+error_status_t curr_err_status;
 
 /// ADC Values - Values are not changed on main() so let's make them volatile
 extern uint16_t analog_truck_12v_voltage;
@@ -115,7 +117,7 @@ void ADC_OnEnd(void)
 */
 void ErrorsSignaling_OnInterrupt(void)
 {
-	/* Write your code here ... */
+
 }
 
 /* END Events */

@@ -28,10 +28,16 @@ Module "TU1"       (component TimerUnit_LDD)
 Module "LedYellow" (component BitIO)
    - LedYellow_ClrVal -Clears (set to zero) the output value. It is equivalent to the [PutVal(FALSE)]. This method is available 
                 only if the direction = _[output]_ or _[input/output]_.
+   - LedYellow_SetVal -Sets (to one) the output value. It is equivalent to the [PutVal(TRUE)]. This method is available only if 
+                the direction = _[output]_ or _[input/output]_.
+   - LedYellow_NegVal -Negates (inverts) the output value. It is equivalent to the [PutVal(!GetVal())]. This method is 
+                available only if the direction = _[output]_ or _[input/output]_.
 
 Module "LedGreen"  (component BitIO)
    - LedGreen_ClrVal -Clears (set to zero) the output value. It is equivalent to the [PutVal(FALSE)]. This method is available 
                 only if the direction = _[output]_ or _[input/output]_.
+   - LedGreen_SetVal -Sets (to one) the output value. It is equivalent to the [PutVal(TRUE)]. This method is available only if 
+                the direction = _[output]_ or _[input/output]_.
    - LedGreen_NegVal -Negates (inverts) the output value. It is equivalent to the [PutVal(!GetVal())]. This method is available 
                 only if the direction = _[output]_ or _[input/output]_.
 
@@ -47,6 +53,8 @@ Module "LedRed"    (component BitIO)
                 only if the direction = _[output]_ or _[input/output]_.
    - LedRed_SetVal -Sets (to one) the output value. It is equivalent to the [PutVal(TRUE)]. This method is available only if 
                 the direction = _[output]_ or _[input/output]_.
+   - LedRed_NegVal -Negates (inverts) the output value. It is equivalent to the [PutVal(!GetVal())]. This method is available 
+                only if the direction = _[output]_ or _[input/output]_.
 
 Module "Cpu"       (component MKE02Z64QH2)
 

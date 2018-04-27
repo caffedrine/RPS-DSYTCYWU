@@ -7,7 +7,7 @@
 **     Version     : Component 02.086, Driver 01.00, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2018-04-27, 17:07, # CodeGen: 10
+**     Date/Time   : 2018-04-27, 17:17, # CodeGen: 12
 **     Abstract    :
 **         This component "BitIO" implements an one-bit input/output.
 **         It uses one bit/pin of a port.
@@ -30,6 +30,7 @@
 **         PutVal - void LedRed_PutVal(bool Val);
 **         ClrVal - void LedRed_ClrVal(void);
 **         SetVal - void LedRed_SetVal(void);
+**         NegVal - void LedRed_NegVal(void);
 **
 **     Copyright : 1997 - 2015 Freescale Semiconductor, Inc. 
 **     All Rights Reserved.
@@ -154,6 +155,17 @@ extern "C" {
 ** ===================================================================
 */
 #define LedRed_SetVal() (BitIoLdd3_SetVal(BitIoLdd3_DeviceData))
+
+/*
+** ===================================================================
+**     Method      :  LedRed_NegVal (component BitIO)
+**     Description :
+**         This method negates (inverts) the output value.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+#define LedRed_NegVal() (BitIoLdd3_NegVal(BitIoLdd3_DeviceData))
 
 /* END LedRed. */
 

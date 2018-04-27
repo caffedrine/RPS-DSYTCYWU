@@ -13,6 +13,57 @@
 #define SOURCES_ERRORS_H_
 
 #include "Common.h"
+#include "LedGreen.h"
+#include "LedRed.h"
+#include "LedYellow.h"
+
+void handle_err_Floating()
+{
+	// In floating mode, green lead must be turned on all the time
+	LedGreen_SetVal();
+}
+
+void handle_err_FastCharge()
+{
+	// Means battery is charging in PHASE1 - so the green led must blink
+	LedGreen_NegVal();
+}
+
+void handle_err_SlowCharge()
+{
+	// Means that battery is charging in PHASE2 - so the led also must blink
+	LedGreen_NegVal();
+}
+
+void handle_err_ShortCircuit()
+{
+	// Just turn off
+}
+
+void handle_err_HotTemp()
+{
+	LedGreen_NegVal();
+	LedYellow_NegVal();
+	LedRed_NegVal();
+}
+
+void handle_err_BrokenConnection()
+{
+	LedYellow_NegVal();
+}
+
+void handle_err_DamagedBattery()
+{
+	LedYellow_NegVal();
+}
+
+void handle_err_Nightmare()
+{
+	// Exception. This code shall not be reached
+	LedGreen_NegVal();
+	LedYellow_NegVal();
+	LedRed_NegVal();
+}
 
 // This function is executed from timer every 800ms
 void handle_error(error_status_t err_type)
@@ -60,46 +111,5 @@ void handle_error(error_status_t err_type)
 		}break;
 	}
 }
-
-void handle_err_Floating()
-{
-
-}
-
-void handle_err_FastCharge()
-{
-
-}
-
-void handle_err_SlowCharge()
-{
-
-}
-
-void handle_err_ShortCircuit()
-{
-
-}
-
-void handle_err_HotTemp()
-{
-
-}
-
-void handle_err_BrokenConnection()
-{
-
-}
-
-void handle_err_damagedBattery()
-{
-
-}
-
-void handle_err_Nightmare()
-{
-
-}
-
 
 #endif /* SOURCES_ERRORS_H_ */

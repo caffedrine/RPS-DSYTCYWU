@@ -31,8 +31,10 @@
 #include "Events.h"
 #include "ADC.h"
 #include "AdcLdd1.h"
-#include "DebugConsole.h"
-#include "IO1.h"
+#ifdef DEBUG
+	#include "DebugConsole.h"
+	#include "IO1.h"
+#endif
 #include "ErrorsSignaling.h"
 #include "TimerIntLdd1.h"
 #include "TU1.h"
@@ -52,10 +54,13 @@
 /* User includes (#include below this line is not maintained by Processor Expert) */
 #include "Common.h"
 #include "Util.h"
+#ifdef DEBUG
+	#include "Debug.h"
+#endif
 ///////////////////////////////////////////////
 /// Global variables
 ///////////////////////////////////////////////
-extern error_t curr_err_status;
+error_status_t curr_err_status;
 
 
 // Global ADC values - updated from interrupt routine
@@ -95,52 +100,13 @@ int main(void)
 	/* Write your code here */
 	converterSetVout(0);		// !!! Make sure converter is not functional when switching power relay
 
-	// Wait a a second for ADC channels to read all the voltages and stuff
-	delayMs(1000);
-
-	#ifdef DEBUG
-		// If debug is enabled, detect the power supply and then print a pretty message!
-		chargingMethod = detectPowerSupply();
-		printf("Power source detection: ");
-
-		switch(chargingMethod)
-		{
-			case charge_TRUCK_12V:
-			{
-				printf("12VDC from TRUCK\r\n");
-			}break;
-
-			case charge_TRUCK_24V:
-			{
-				printf("24VDC from TRUCK\r\n");
-			}break;
-
-			case charge_EXTERNAL:
-			{
-				printf("ETERNAL POWER SUPPLY\r\n");
-			}break;
-
-			case charge_NONE:
-			{
-				printf("NONE DETECTED\r\n");
-			}break;
-
-			case charge_ERR_MULTIPLE:
-			{
-				printf("!!!WARNING: Multiple power sources detected!");
-			}break;
-
-			default:
-			{
-				printf("ERR_EXCEPTION - This is bad...");
-			}break;
-		}
-	#endif
-
 	for (;;)
 	{
 		// Detecting the power source and it's kind
 		chargingMethod = detectPowerSupply();
+		#ifdef DEBUG
+			printPowerSource(chargingMethod);
+		#endif
 
 		switch(chargingMethod)
 		{
@@ -154,7 +120,22 @@ int main(void)
 				handle_24V_truck_charging();
 			}break;
 
+			case charge_EXTERNAL:
+			{
+				handle_24V_external_charging();
+			}break;
 
+			case charge_NONE:
+			{
+				// Take a breath and try again
+				delayMs(200);	// Wait for ADC port to be filled up
+				continue;
+			}break;
+
+			case charge_ERR_MULTIPLE:
+			{
+				// Multiple power sources detected at the same time
+			}break;
 		}
 	}
 
@@ -193,13 +174,22 @@ charging_method_t detectPowerSupply()
 	charging_method_t detected = charge_NONE;	// Variable used to store detected method
 	float voltage;								// Used to store voltage received from power sources
 
+#if(BATTERY_TYPE==12)
 	// Check if power supply is 12V truck
 	voltage = analog2Volts( analog_truck_12v_voltage );	// the ADC measurement is converted to a more human readable format
 	if( voltage >= TRUCK_12V_MIN_VOLTAGE_ALLOWED && voltage <= TRUCK_12V_MAX_VOLTAGE_ALLOWED )
 	{
-		detected = charge_TRUCK_12V;
+		if(detected != charge_NONE)
+		{
+			detected = charge_ERR_MULTIPLE;
+			return detected;
+		}
+		else
+		{
+			detected = charge_TRUCK_12V;
+		}
 	}
-
+#elif(BATTERY_TYPE==24)
 	// Check if power supply is 24V truck
 	voltage = analog2Volts( analog_truck_24v_voltage );
 	if( voltage >= TRUCK_24V_MIN_VOLTAGE_ALLOWED && voltage <= TRUCK_24V_MAX_VOLTAGE_ALLOWED)
@@ -216,7 +206,7 @@ charging_method_t detectPowerSupply()
 			detected = charge_TRUCK_24V;
 		}
 	}
-
+#endif
 	// Finally check if the power supply is external
 	voltage = analog2Volts( analog_external_pwr_source_voltage );
 	if(voltage >= EXTERNAL_MIN_VOLTAGE_ALLOWED && voltage <= EXTERNAL_MAX_VOLTAGE_ALLOWED)

@@ -1,4 +1,4 @@
-Generated_Code/ADC.o: ../Generated_Code/ADC.c \
+Generated_Code/ErrorsSignaling.o: ../Generated_Code/ErrorsSignaling.c \
  /home/curiosul/Workspace/KDS/battery-charger/Sources/Events.h \
  /home/curiosul/Workspace/KDS/battery-charger/Generated_Code/PE_Types.h \
  /home/curiosul/Workspace/KDS/battery-charger/Generated_Code/PE_Error.h \
@@ -33,7 +33,7 @@ Generated_Code/ADC.o: ../Generated_Code/ADC.c \
  /home/curiosul/Workspace/KDS/battery-charger/Generated_Code/LedRed.h \
  /home/curiosul/Workspace/KDS/battery-charger/Generated_Code/BitIoLdd3.h \
  /home/curiosul/Workspace/KDS/battery-charger/Generated_Code/BitIoLdd3.h \
- ../Generated_Code/ADC.h
+ ../Generated_Code/ErrorsSignaling.h
 
 /home/curiosul/Workspace/KDS/battery-charger/Sources/Events.h:
 
@@ -103,4 +103,4 @@ Generated_Code/ADC.o: ../Generated_Code/ADC.c \
 
 /home/curiosul/Workspace/KDS/battery-charger/Generated_Code/BitIoLdd3.h:
 
-../Generated_Code/ADC.h:
+../Generated_Code/ErrorsSignaling.h:
