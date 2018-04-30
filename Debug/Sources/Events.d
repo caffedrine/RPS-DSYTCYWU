@@ -34,7 +34,9 @@ Sources/Events.o: ../Sources/Events.c \
  /home/curiosul/Workspace/KDS/battery-charger/Generated_Code/LedRed.h \
  /home/curiosul/Workspace/KDS/battery-charger/Generated_Code/BitIoLdd3.h \
  /home/curiosul/Workspace/KDS/battery-charger/Generated_Code/BitIoLdd3.h \
- ../Sources/Common.h ../Sources/Errors.h
+ ../Sources/Common.h \
+ /home/curiosul/Workspace/KDS/battery-charger/Sources/include/gpio.h \
+ ../Sources/Errors.h
 
 /home/curiosul/Workspace/KDS/battery-charger/Generated_Code/Cpu.h:
 
@@ -107,5 +109,7 @@ Sources/Events.o: ../Sources/Events.c \
 /home/curiosul/Workspace/KDS/battery-charger/Generated_Code/BitIoLdd3.h:
 
 ../Sources/Common.h:
+
+/home/curiosul/Workspace/KDS/battery-charger/Sources/include/gpio.h:
 
 ../Sources/Errors.h:
