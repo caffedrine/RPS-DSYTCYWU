@@ -17,19 +17,26 @@
 #include "LedRed.h"
 #include "LedYellow.h"
 
-void handle_err_Floating()
+//  _                    _     __                  _   _
+// | |    ___   ___ __ _| |   / _|_   _ _ __   ___| |_(_) ___  _ __  ___
+// | |   / _ \ / __/ _` | |  | |_| | | | '_ \ / __| __| |/ _ \| '_ \/ __|
+// | |__| (_) | (_| (_| | |  |  _| |_| | | | | (__| |_| | (_) | | | \__ \
+// |_____\___/ \___\__,_|_|  |_|  \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
+//
+
+void handle_errOK_Floating()
 {
 	// In floating mode, green lead must be turned on all the time
 	LedGreen_SetVal();
 }
 
-void handle_err_FastCharge()
+void handle_errOK_Absorption()
 {
 	// Means battery is charging in PHASE1 - so the green led must blink
 	LedGreen_NegVal();
 }
 
-void handle_err_SlowCharge()
+void handle_errOK_Bulk()
 {
 	// Means that battery is charging in PHASE2 - so the led also must blink
 	LedGreen_NegVal();
@@ -65,24 +72,31 @@ void handle_err_Nightmare()
 	LedRed_NegVal();
 }
 
+
+//	  ____ _       _           _     __                  _   _
+//	 / ___| | ___ | |__   __ _| |   / _|_   _ _ __   ___| |_(_) ___  _ __  ___
+//	| |  _| |/ _ \| '_ \ / _` | |  | |_| | | | '_ \ / __| __| |/ _ \| '_ \/ __|
+//	| |_| | | (_) | |_) | (_| | |  |  _| |_| | | | | (__| |_| | (_) | | | \__ \
+//	 \____|_|\___/|_.__/ \__,_|_|  |_|  \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
+
 // This function is executed from timer every 800ms
-void handle_error(error_status_t err_type)
+void handle_error(charger_status_t err_type)
 {
 	switch(err_type)
 	{
-		case err_Floating:
+		case errOK_Floating:
 		{
-			handle_err_Floating();
+			handle_errOK_Floating();
 		}break;
 
-		case err_FastCharge:
+		case errOK_Absorption:
 		{
-			handle_err_FastCharge();
+			handle_errOK_Absorption();
 		}break;
 
-		case err_SlowCharge:
+		case errOK_Bulk:
 		{
-			handle_err_SlowCharge();
+			handle_errOK_Bulk();
 		}break;
 
 		case err_ShortCircuit:

@@ -3,6 +3,9 @@
  *
  *  Created on: Apr 26, 2018
  *      Author: curiosul
+ *
+ *  Collection of some util functions used all around the project!
+ *  Is can be easily reused as there are no dependencies.
  */
 
 #ifndef SOURCES_UTIL_H_

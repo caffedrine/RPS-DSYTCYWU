@@ -3,6 +3,8 @@
  *
  *  Created on: Apr 27, 2018
  *      Author: curiosul
+ *
+ *  Description: This file contains all the functions used to debug data via serial port
  */
 
 #ifndef SOURCES_DEBUG_H_
@@ -11,6 +13,7 @@
 #include <stdio.h>
 #include "Common.h"
 
+/// Print power source detected/selected on DEBUG port
 void printPowerSource(charging_method_t chargingMethod)
 {
 	printf("Power source detection: ");

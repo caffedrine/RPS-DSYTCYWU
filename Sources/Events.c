@@ -39,9 +39,6 @@ extern "C" {
 #include "Common.h"
 #include "Errors.h"
 
-// Defined in main
-error_status_t curr_err_status;
-
 /// ADC Values - Values are not changed on main() so let's make them volatile
 extern uint16_t analog_truck_12v_voltage;
 extern uint16_t analog_truck_24v_voltage;

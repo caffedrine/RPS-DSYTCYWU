@@ -54,39 +54,54 @@
 /* User includes (#include below this line is not maintained by Processor Expert) */
 #include "Common.h"
 #include "Util.h"
+#include "gpio.h"
 #ifdef DEBUG
 	#include "Debug.h"
 #endif
-///////////////////////////////////////////////
-/// Global variables
-///////////////////////////////////////////////
-error_status_t curr_err_status;
 
+//	   ____ _       _           _
+//	  / ___| | ___ | |__   __ _| |___
+//	 | |  _| |/ _ \| '_ \ / _` | / __|
+//	 | |_| | | (_) | |_) | (_| | \__ \
+//	  \____|_|\___/|_.__/ \__,_|_|___/
+//
+charger_status_t curr_status;							/// Store current status of the charger
 
 // Global ADC values - updated from interrupt routine
-uint16_t analog_truck_12v_voltage;
-uint16_t analog_truck_24v_voltage;
-uint16_t analog_external_pwr_source_voltage;
+uint16_t analog_truck_12v_voltage;						/// Store current read voltage of truck power supply from 12V pin
+uint16_t analog_truck_24v_voltage;						/// Store current read voltage of truck power supply from 24V pin
+uint16_t analog_external_pwr_source_voltage;			/// External power source voltage read
 uint16_t analog_pwm_fb;
-uint16_t analog_v_battery_micro_voltage;
-uint16_t analog_battery_current_amps;		/// Battery current
-uint16_t analog_NTC_mos_temp;				/// PCB Temperature
-uint16_t analog_NTC_batt1_temp;
-uint16_t analog_NTC_batt2_temp;
+uint16_t analog_v_battery_micro_voltage;				/// Battery voltage read on uC
+uint16_t analog_battery_current_amps;					/// Battery current read
+uint16_t analog_NTC_mos_temp;							/// PCB Temperature read
+uint16_t analog_NTC_batt1_temp;							/// Battery temperature 1
+uint16_t analog_NTC_batt2_temp;							/// Battery temperature 2
 
-charging_method_t chargingMethod = charge_NONE;
+charging_method_t chargingMethod = charge_NONE;			/// Store current selected/detected charging method
 
-///////////////////////////////////////////////
-/// Functions
-///////////////////////////////////////////////
-
+//	 ____            _                 _   _
+//	|  _ \  ___  ___| | __ _ _ __ __ _| |_(_) ___  _ __  ___
+//	| | | |/ _ \/ __| |/ _` | '__/ _` | __| |/ _ \| '_ \/ __|
+//	| |_| |  __/ (__| | (_| | | | (_| | |_| | (_) | | | \__ \
+//	|____/ \___|\___|_|\__,_|_|  \__,_|\__|_|\___/|_| |_|___/
+//
 void handle_24V_truck_charging(void);
 void handle_12V_truck_charging(void);
 void handle_24V_external_charging(void);
 
-void converterSetVout(float voltage);
+void lm5175SetVout(float voltage);
+void lm5175SetIout(float current);
+void lm5175SetEnable(bool enable);
+
 charging_method_t detectPowerSupply();
 
+//	 ____        __ _       _ _   _
+//	|  _ \  ___ / _(_)_ __ (_) |_(_) ___  _ __  ___
+//	| | | |/ _ \ |_| | '_ \| | __| |/ _ \| '_ \/ __|
+//	| |_| |  __/  _| | | | | | |_| | (_) | | | \__ \
+//	|____/ \___|_| |_|_| |_|_|\__|_|\___/|_| |_|___/
+//
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
@@ -98,15 +113,21 @@ int main(void)
 	/*** End of Processor Expert internal initialization.                    ***/
 
 	/* Write your code here */
-	converterSetVout(0);		// !!! Make sure converter is not functional when switching power relay
+	lm5175SetVout(0);		// !!! Make sure converter is not functional when switching power relay
+	lm5175SetIout(0);		// !!! Set output current to 0
 
 	for (;;)
 	{
-		// Detecting the power source and it's kind
+#ifdef DEBUG
+		// Check whether power supply was changed every time
+		if( detectPowerSupply() != chargingMethod )	// if new detected power supply != than the previously detected
+		{
+			printf("POWER SUPPLY CHANGE DETECTED!\r\n");
+		}
+#endif
+
+		// Detect the power source and it's kind and store it
 		chargingMethod = detectPowerSupply();
-		#ifdef DEBUG
-			printPowerSource(chargingMethod);
-		#endif
 
 		switch(chargingMethod)
 		{
@@ -129,12 +150,12 @@ int main(void)
 			{
 				// Take a breath and try again
 				delayMs(200);	// Wait for ADC port to be filled up
-				continue;
 			}break;
 
 			case charge_ERR_MULTIPLE:
 			{
 				// Multiple power sources detected at the same time
+				printPowerSource(chargingMethod);	// print error
 			}break;
 		}
 	}
@@ -151,7 +172,12 @@ int main(void)
 } /*** End of main routine. DO NOT MODIFY THIS TEXT!!! ***/
 
 
-
+//	  ____                    __                  _   _
+//	 / ___|___  _ __ ___     / _|_   _ _ __   ___| |_(_) ___  _ __  ___
+//	| |   / _ \| '__/ _ \   | |_| | | | '_ \ / __| __| |/ _ \| '_ \/ __|
+//	| |__| (_) | | |  __/   |  _| |_| | | | | (__| |_| | (_) | | | \__ \
+//	 \____\___/|_|  \___|   |_|  \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
+//
 void handle_12V_truck_charging(void)
 {
 	//TODO: Implement
@@ -167,6 +193,12 @@ void handle_24V_external_charging(void)
 	//TODO: Implement
 }
 
+//	 _____                 _   _
+//	|  ___|   _ _ __   ___| |_(_) ___  _ __  ___
+//	| |_ | | | | '_ \ / __| __| |/ _ \| '_ \/ __|
+//	|  _|| |_| | | | | (__| |_| | (_) | | | \__ \
+//	|_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
+//
 charging_method_t detectPowerSupply()
 {
 	// this function will return first one which is found to be valid
@@ -227,11 +259,31 @@ charging_method_t detectPowerSupply()
 	return detected;
 }
 
-void converterSetVout(float voltage)
+void lm5175SetVout(float voltage)
 {
 	//TODO: Implement
 }
 
+void lm5175SetIout(float current)
+{
+	///TODO: Implement
+}
+
+/// Low level eneble/disable LM5175 driver
+void lm5175SetEnable(bool enable)
+{
+	/// This is a critical pin! Must be sure at any moment (even before initialization) that
+	/// it can be securely used!
+
+	// Set as output
+	GPIOB_BASE_PTR->PDDR |= (1 << LM5175_EN_UVLO);
+
+	// Write logic value to it's output
+	if(enable == 1)
+		PTB->PSOR |= 1 << LM5175_EN_UVLO;
+	else
+		PTB->PCOR |= 1 << LM5175_EN_UVLO;
+}
 
 
 /* END main */
