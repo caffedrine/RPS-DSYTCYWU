@@ -38,7 +38,7 @@ class TcpServer:
         print >> sys.stderr, 'Waiting for clients...'
         try:
             self.client_connection, client_address = self.server.accept()
-            print >> sys.stderr, 'Connection established with %s port %s...' % client_address
+            print >> sys.stderr, 'Connection established with %s port %s...' % self.client_address
             return 0
         except Exception as e:
             print >> sys.stderr, 'Failed to establish a connection with a client: ' + str(e)
