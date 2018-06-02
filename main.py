@@ -29,7 +29,6 @@ def start_networking_task():
         if first_time is True or client is None or client.is_alive() == 0:
             if first_time is False:    # Don't print this message on first attempt
                 dbg("Broken/lost client connection detected...\n", alert=1)
-            first_time = False
 
             # Create start TCP listener in order to get new clients
             dbg("Starting a new TCP server on port %s..." % str(TCP_PORT))
@@ -50,6 +49,7 @@ def start_networking_task():
                 dbg("ERROR: " + client.get_last_error + "\n", alert=1)
                 dbg("Retrying in 15 seconds...\n", alert=1)
                 sleep(15)
+                continue
             dbg("done: " + str(client.get_address()) + " " + str(client.get_port()) + "\n")
 
             # Stop TCP Server as the connection with client was already established
@@ -59,6 +59,9 @@ def start_networking_task():
                 dbg("failed\n", alert=1)
                 dbg("WARN: " + server.get_last_error() + "\n", alert=1)
             dbg("done\n")
+
+            # Trigger the flag to know that a client was connected at least
+            first_time = False
 
         # Process received data and stuff
         data = client.recv(16)

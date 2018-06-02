@@ -8,6 +8,7 @@
 import socket
 import select
 import sys
+from time import sleep
 from exceptions import Exception
 
 
@@ -230,12 +231,63 @@ class TcpServer:
         self.__last_error = err_str
 
 
-# Sockets @ test function
-def sockets_test():
-    # Testing class
-    server = TcpServer(1337)
-    client = server.get_new_client()
+# Function used to print debug messages
+def dbg(dbg_str, alert=0):
+    if alert == 1:
+        sys.stdout.write("\033[1;31m")  # Set text to red
+        sys.stdout.write(dbg_str)
+        sys.stdout.write("\033[0;0m")   # Reset text
+        sys.stdout.flush()
+    else:
+        sys.stdout.write(dbg_str)
+        sys.stdout.flush()
 
+
+# Test function - this will echo received data from first connected client
+# Will handle sudden disconnects and the rest!
+def sockets_test(TCP_PORT):
+    first_time = True
     while True:
-        data = client.recv(1)
+        # If client fd is writable
+        if first_time is True or client is None or client.is_alive() == 0:
+            if first_time is False:    # Don't print this message on first attempt
+                dbg("Broken/lost client connection detected...\n", alert=1)
+
+            # Create start TCP listener in order to get new clients
+            dbg("Starting a new TCP server on port %s..." % str(TCP_PORT))
+            server = TcpServer(TCP_PORT)
+            if server.is_started() is False:  # Do not continue if port already in use
+                dbg("failed\n", alert=1)
+                dbg("ERROR: " + server.get_last_error() + "\n", alert=1)
+                dbg("Retrying in 15 seconds...\n", alert=1)
+                sleep(15)
+                continue
+            dbg("done\n")
+
+            # Wait for clients to connect
+            dbg("Waiting for clients to connect...")
+            client = server.get_new_client()
+            if client is None:
+                dbg("failed\n", alert=1)
+                dbg("ERROR: " + client.get_last_error + "\n", alert=1)
+                dbg("Retrying in 15 seconds...\n", alert=1)
+                sleep(15)
+                continue
+            dbg("done: " + str(client.get_address()) + " " + str(client.get_port()) + "\n")
+
+            # Stop TCP Server as the connection with client was already established
+            dbg("Stopping TCP server to prevent multiple clients...")
+            server.stop()
+            if server.is_started() is True:
+                dbg("failed\n", alert=1)
+                dbg("WARN: " + server.get_last_error() + "\n", alert=1)
+            dbg("done\n")
+
+            # Trigger the flag to know that a client was connected at least
+            first_time = False
+
+        # Process received data and stuff
+        data = client.recv(16)
+        if data == -1:
+            continue
         client.write(data)
