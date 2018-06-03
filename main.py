@@ -64,9 +64,11 @@ def start_networking_task():
             first_time = False
 
         # Process received data and stuff
-        data = client.recv(16)
+        data = client.recv(64)
         if data == -1:
             continue
+        else:
+            dbg("RECV: " + str(data) + "\n")
 
         client.write(data)
 
