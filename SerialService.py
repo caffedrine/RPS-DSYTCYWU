@@ -39,10 +39,8 @@ class SerialService:
     def is_alive(self):
         if self.__hSerial is None:
             return False
-
         if self.__hSerial.isOpen is False:
             return False
-
         return True
 
     def connect(self):
