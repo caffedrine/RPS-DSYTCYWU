@@ -8,7 +8,10 @@
 from threading import Thread
 
 from Sockets import *
+from Sockets import TcpServer
 from Util import *
+
+RECONNECT_ATTEMPT_S = 10
 
 def tcp_recv_internal_callback(client, data):
     dbg("[" + client.get_address + ":" + client.get_address + "] " + str(data) + "\n")
@@ -25,7 +28,7 @@ def start_networking_task(TCP_PORT, recvCallback=tcp_recv_internal_callback):
 
             # Create start TCP listener in order to get new clients
             dbg("Starting a new TCP server on port %s..." % str(TCP_PORT))
-            server = TcpServer(TCP_PORT)
+            server=TcpServer(TCP_PORT)
             if server.is_started() is False:  # Do not continue if port already in use
                 dbg("failed\n", alert=1)
                 dbg("ERROR: " + server.get_last_error() + "\n", alert=1)
@@ -40,8 +43,8 @@ def start_networking_task(TCP_PORT, recvCallback=tcp_recv_internal_callback):
             if client is None:
                 dbg("failed\n", alert=1)
                 dbg("ERROR: " + server.get_last_error() + "...\n", alert=1)
-                dbg("Server will restart in 15 seconds...\n", alert=1)
-                sleep(15)
+                dbg("Will try again in " + str(RECONNECT_ATTEMPT_S) + " seconds...\n", alert=1)
+                sleep(RECONNECT_ATTEMPT_S)
                 continue
             dbg("done: " + str(client.get_address()) + " " + str(client.get_port()) + "\n")
 

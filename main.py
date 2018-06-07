@@ -6,6 +6,7 @@
 #
 
 # Standard modules
+import SerialService
 from threading import Thread
 from time import sleep
 import sys
@@ -20,11 +21,14 @@ from Util import *
 def tcp_recv_callback(client, data):
     dbg("[" + str(client.get_address()) + ":" + str(client.get_port()) + "] " + str(data) + "\n")
 
+def serial_recv_callback(port, data):
+    dbg("[" + "port.getPort()" + "] " + str(data) + "\n")
+
 
 # Main function
 def main():
     # Start TCP networking on port 1337
-    start_networking_task_background(1337, tcp_recv_callback)
+    # start_networking_task_background(1337, tcp_recv_callback)
 
     while True:
         a = 0
