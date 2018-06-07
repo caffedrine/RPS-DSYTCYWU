@@ -36,7 +36,7 @@ def main():
     start_serial_service_background("/dev/ttyACM0", 9600, serial_recv_callback)
 
     while True:
-        a = 0
+        a = 0123
 
 
 # Execute main function
