@@ -13,10 +13,10 @@ import datetime
 DBG_ENB = True
 
 
-def dbg(dbg_str, alert = 0, timestamp=0):
+def dbg(dbg_str, alert=0):
 
     st = datetime.datetime.fromtimestamp(time.time()).strftime('%H:%M:%S.%f')[:-3]
-    if dbg_str[0].istitle():
+    if dbg_str[0].istitle() or dbg_str[0] is '[':
         sys.stdout.write("[" + st + "] ")
 
     if alert == 1:

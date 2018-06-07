@@ -8,6 +8,7 @@
 import socket
 import select
 import sys
+from sys import platform as _platform
 from time import sleep
 from exceptions import Exception
 
@@ -19,7 +20,7 @@ class TcpClient:
         # Client fd descriptor
         self.__hSocket = fd
         self.__hSocket.setblocking(1)
-        self.set_keepalive_linux(self.__hSocket)
+        self.set_keepalive(self.__hSocket)
 
         # Client info
         self.__port = port
@@ -100,17 +101,21 @@ class TcpClient:
             return False
 
     # Function to set TCP keep-alive
-    def set_keepalive_linux(self, sock, after_idle_sec=1, interval_sec=3, max_fails=5):
-        # Set TCP keepalive on an open socket.
-        #
-        # It activates after 1 second (after_idle_sec) of idleness,
-        # then sends a keepalive ping once every 3 seconds (interval_sec),
-        # and closes the connection after 5 failed ping (max_fails), or 15 seconds
+    def set_keepalive(self, sock, after_idle_sec=1, interval_sec=3, max_fails=5):
+        # If platform is windows
+        if _platform == "win32" or _platform == "win64":
+            sock.ioctl(socket.SIO_KEEPALIVE_VALS, (1, 10000, 3000))
+        else:
+            # Set TCP keepalive on an open socket.
+            #
+            # It activates after 1 second (after_idle_sec) of idleness,
+            # then sends a keepalive ping once every 3 seconds (interval_sec),
+            # and closes the connection after 5 failed ping (max_fails), or 15 seconds
 
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
-        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, after_idle_sec)
-        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, interval_sec)
-        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, max_fails)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, after_idle_sec)
+            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, interval_sec)
+            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, max_fails)
 
     # Return client's port
     def get_port(self):
@@ -218,7 +223,14 @@ class TcpServer:
             # print "Connection established with %s on port %s..." % client_address
 
             # If a client is connected, return it
-            return TcpClient(client_socket, client_address[1], client_address[0])
+            client = TcpClient(client_socket, client_address[1], client_address[0])
+
+            # but first remove 21 bytes of garbage from windows!
+            # TODO: Inspect
+            client.recv(21);
+
+            # Return client handler
+            return client
 
         except Exception as e:
             self.__set_last_error(str(e))
