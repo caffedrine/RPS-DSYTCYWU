@@ -134,11 +134,11 @@ class SerialService:
                 continue
 
             # This code is reached if connection to given port failed
-            dbg("Attempting to connect to %s with baud %s..." % (str(serial_port), str(baud_rate)))
+            dbg("[SerialService] Attempting to connect to %s with baud %s..." % (str(serial_port), str(baud_rate)))
             if self._serial_service.connect() is False:
                 dbg("failed\n", alert=1)
-                dbg("ERROR: " + self._serial_service.get_last_error() + "\n", alert=1)
-                dbg("I will try again in " + str(RECONNECT_ATTEMPT_S) + " seconds...\n", alert=1)
+                dbg("[SerialService] ERROR: " + self._serial_service.get_last_error() + "\n", alert=1)
+                dbg("[SerialService] I will try again in " + str(RECONNECT_ATTEMPT_S) + " seconds...\n", alert=1)
                 time.sleep(RECONNECT_ATTEMPT_S)
                 continue
             dbg("done\n")

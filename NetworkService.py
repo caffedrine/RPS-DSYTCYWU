@@ -24,36 +24,36 @@ def start_networking_task(TCP_PORT, recvCallback=tcp_recv_internal_callback):
         # If client fd is writable
         if first_time is True or client is None or client.is_alive() == 0:
             if first_time is False:    # Don't print this message on first attempt
-                dbg("Broken/lost client connection detected...\n", alert=1)
+                dbg("[NetworkService] Broken/lost client connection detected...\n", alert=1)
 
             # Create start TCP listener in order to get new clients
-            dbg("Starting a new TCP server on port %s..." % str(TCP_PORT))
+            dbg("[NetworkService] Starting a new TCP server on port %s..." % str(TCP_PORT))
             server=TcpServer(TCP_PORT)
             if server.is_started() is False:  # Do not continue if port already in use
                 dbg("failed\n", alert=1)
-                dbg("ERROR: " + server.get_last_error() + "\n", alert=1)
-                dbg("Retrying in 15 seconds...\n", alert=1)
+                dbg("[NetworkService] ERROR: " + server.get_last_error() + "\n", alert=1)
+                dbg("[NetworkService] Retrying in 15 seconds...\n", alert=1)
                 sleep(15)
                 continue
             dbg("done\n")
 
             # Wait for clients to connect
-            dbg("Waiting for clients to connect...")
+            dbg("[NetworkService] Waiting for clients to connect...")
             client = server.get_new_client()
             if client is None:
                 dbg("failed\n", alert=1)
-                dbg("ERROR: " + server.get_last_error() + "...\n", alert=1)
-                dbg("Will try again in " + str(RECONNECT_ATTEMPT_S) + " seconds...\n", alert=1)
+                dbg("[NetworkService] ERROR: " + server.get_last_error() + "...\n", alert=1)
+                dbg("[NetworkService] Will try again in " + str(RECONNECT_ATTEMPT_S) + " seconds...\n", alert=1)
                 sleep(RECONNECT_ATTEMPT_S)
                 continue
             dbg("done: " + str(client.get_address()) + " " + str(client.get_port()) + "\n")
 
             # Stop TCP Server as the connection with client was already established
-            dbg("Stopping TCP server to prevent multiple clients...")
+            dbg("[NetworkService] Stopping TCP server to prevent multiple clients...")
             server.stop()
             if server.is_started() is True:
                 dbg("failed\n", alert=1)
-                dbg("WARN: " + server.get_last_error() + "\n", alert=1)
+                dbg("[NetworkService] WARN: " + server.get_last_error() + "\n", alert=1)
             dbg("done\n")
 
             # Trigger the flag to know that a client was connected at least
