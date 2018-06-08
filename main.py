@@ -25,6 +25,7 @@ def tcp_recv_callback(client, data):
 
 def serial_recv_callback(port, data):
     dbg("[" + str(port.get_port_name()) + "] " + str(data) + "\n")
+    pass
 
 
 # Main function
@@ -34,10 +35,10 @@ def main():
 
     # Start serial port service
     serial = SerialService()
-    serial.start_serial_service_background("/dev/ttyACM0", 9600, serial_recv_callback)
+    serial.start_serial_service_background("COM4", 9600, serial_recv_callback)
 
     while True:
-        a = 0123
+        a = 0
 
 
 # Execute main function
@@ -50,4 +51,3 @@ if __name__ == '__main__':
             sys.exit(0)
         except SystemExit:
             os._exit(0)
-

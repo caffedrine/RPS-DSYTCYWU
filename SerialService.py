@@ -11,7 +11,6 @@ from Util import *
 import time
 from serial import *
 
-
 # After how many seconds should attempt to reconnect
 RECONNECT_ATTEMPT_S = 10
 
@@ -39,6 +38,7 @@ class SerialPort:
             return self.__hSerial.read(buff_len)
         except Exception as e:
             self.__set_last_error("Port is not open!")
+            self.__hSerial.close()
             return -1
 
     def write(self, data):
@@ -52,13 +52,23 @@ class SerialPort:
             return self.__hSerial.write(data)
         except Exception as e:
             self.__set_last_error("Port is not open!")
+            self.__hSerial.close()
+            return -1
 
     def is_alive(self):
         if self.__hSerial is None:
             return False
-        if self.__hSerial.isOpen is False:
+        if self.__hSerial.isOpen() is False:
             return False
-        return True
+
+        # Will try to read some data. If there is actualt data available, then error will be prompted on write/read
+        if self.is_data_available() <= 0:
+            try:
+                self.__hSerial.read(1)
+            except Exception as e:
+                self.__set_last_error(str(e))
+                return False
+            return True
 
     def connect(self):
         try:
@@ -75,6 +85,13 @@ class SerialPort:
         except Exception as e:
             self.__set_last_error(str(e))
             return False
+
+    def is_data_available(self):
+        try:
+            return self.__hSerial.in_waiting
+        except Exception as e:
+            self.__set_last_error(str(e))
+            return -1
 
     def get_last_error(self):
         return self.__last_error
@@ -101,35 +118,34 @@ class SerialService:
 
     def start_serial_service(self, serial_port, baud_rate, callback_recv):
         # Create a new serial port instance
-        serial_service = SerialPort(serial_port, baud_rate)
-
+        self._serial_service = SerialPort(serial_port, baud_rate)
         while True:
-            if serial_service is not None and serial_service.is_alive():
-                # Read data and pass it via callback function if available
-                recv_data = serial_service.read(64)
-                if recv_data == -1:
-                    continue
-                else:
-                    callback_recv(serial_service, recv_data)
-
-                # Send some data is
+            if self._serial_service is not None and self._serial_service.is_alive():
+                # if some data is available
+                if self._serial_service.is_data_available() > 0:
+                    # Read data and pass it via callback function if available
+                    recv_data = self._serial_service.read(64)
+                    if recv_data == -1:
+                        continue
+                    else:
+                        callback_recv(self._serial_service, recv_data)
 
                 # Reset loop to prevent reconnect
                 continue
 
             # This code is reached if connection to given port failed
-            dbg("Attempting to connect to %s with baud %s..." % (str(serial_port), str(baud_rate)) )
-            if serial_service.connect() is False:
+            dbg("Attempting to connect to %s with baud %s..." % (str(serial_port), str(baud_rate)))
+            if self._serial_service.connect() is False:
                 dbg("failed\n", alert=1)
-                dbg("ERROR: " + serial_service.get_last_error() + "\n", alert=1)
-                dbg("Server will restart in " + str(RECONNECT_ATTEMPT_S) + " seconds...\n", alert=1)
+                dbg("ERROR: " + self._serial_service.get_last_error() + "\n", alert=1)
+                dbg("I will try again in " + str(RECONNECT_ATTEMPT_S) + " seconds...\n", alert=1)
                 time.sleep(RECONNECT_ATTEMPT_S)
                 continue
             dbg("done\n")
 
     def start_serial_service_background(self, serial_port, baud_rate, callback_recv):
         # Launch socket connection in background in a separate thread
-        sockets_thread = Thread(target=self.__serial_service, args=[serial_port, baud_rate, callback_recv] )
+        sockets_thread = Thread(target=self.start_serial_service, args=[serial_port, baud_rate, callback_recv])
         sockets_thread.daemon = True
         sockets_thread.start()
         sockets_thread.join()

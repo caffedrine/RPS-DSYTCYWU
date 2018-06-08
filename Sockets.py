@@ -10,8 +10,7 @@ import select
 import sys
 from sys import platform as _platform
 from time import sleep
-from exceptions import Exception
-
+from exceptions import *
 
 # Local TCP client connection
 class TcpClient:
