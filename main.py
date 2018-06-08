@@ -33,7 +33,8 @@ def main():
     # start_networking_task_background(1337, tcp_recv_callback)
 
     # Start serial port service
-    start_serial_service_background("/dev/ttyACM0", 9600, serial_recv_callback)
+    serial = SerialService()
+    serial.start_serial_service_background("/dev/ttyACM0", 9600, serial_recv_callback)
 
     while True:
         a = 0123

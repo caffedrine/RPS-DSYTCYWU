@@ -16,7 +16,7 @@ from serial import *
 RECONNECT_ATTEMPT_S = 10
 
 
-class SerialService:
+class SerialPort:
     def __init__(self, serial_port, baud_rate):
         # User defined config
         self.__port_name = serial_port
@@ -29,12 +29,29 @@ class SerialService:
         self.__last_error = ""
 
     def read(self, buff_len):
-        return 1
+        if not self.is_alive():
+            self.__set_last_error("Port is not open!")
+            return -1
+        if buff_len <= 0:
+            self.__set_last_error("Can't read this length")
+            return -1
+        try:
+            return self.__hSerial.read(buff_len)
+        except Exception as e:
+            self.__set_last_error("Port is not open!")
+            return -1
 
     def write(self, data):
         if not self.is_alive():
             self.__set_last_error("Port is not open!")
             return -1
+        if len(data) == 0:
+            self.__set_last_error("Can't read this length")
+            return -1
+        try:
+            return self.__hSerial.write(data)
+        except Exception as e:
+            self.__set_last_error("Port is not open!")
 
     def is_alive(self):
         if self.__hSerial is None:
@@ -72,40 +89,47 @@ class SerialService:
         return self.__baud_rate
 
 
-def serial_recv_callback(port, data):
-    dbg("[" + port.name + "] " + str(data) + "\n")
+class SerialService:
+    def __init__(self):
+        self.__serial_service = None
 
+    def get_instance(self):
+        return self.__serial_service
 
-def start_serial_service(serial_port, baud_rate, callback_recv):
-    # Create a new serial port instance
-    serial_service = SerialService(serial_port, baud_rate)
+    def serial_recv_callback(self, port, data):
+        dbg("[" + port.name + "] " + str(data) + "\n")
 
-    while True:
-        if serial_service is not None and serial_service.is_alive():
-            # Read data and pass it via callback function if available
-            recv_data = serial_service.read(64)
-            if recv_data == -1:
+    def start_serial_service(self, serial_port, baud_rate, callback_recv):
+        # Create a new serial port instance
+        serial_service = SerialPort(serial_port, baud_rate)
+
+        while True:
+            if serial_service is not None and serial_service.is_alive():
+                # Read data and pass it via callback function if available
+                recv_data = serial_service.read(64)
+                if recv_data == -1:
+                    continue
+                else:
+                    callback_recv(serial_service, recv_data)
+
+                # Send some data is
+
+                # Reset loop to prevent reconnect
                 continue
-            else:
-                callback_recv(serial_service, recv_data)
 
-            # Reset loop to prevent reconnect
-            continue
+            # This code is reached if connection to given port failed
+            dbg("Attempting to connect to %s with baud %s..." % (str(serial_port), str(baud_rate)) )
+            if serial_service.connect() is False:
+                dbg("failed\n", alert=1)
+                dbg("ERROR: " + serial_service.get_last_error() + "\n", alert=1)
+                dbg("Server will restart in " + str(RECONNECT_ATTEMPT_S) + " seconds...\n", alert=1)
+                time.sleep(RECONNECT_ATTEMPT_S)
+                continue
+            dbg("done\n")
 
-        # This code is reached if connection to given port failed
-        dbg("Attempting to connect to %s with baud %s..." % (str(serial_port), str(baud_rate)) )
-        if serial_service.connect() is False:
-            dbg("failed\n", alert=1)
-            dbg("ERROR: " + serial_service.get_last_error() + "\n", alert=1)
-            dbg("Server will restart in " + str(RECONNECT_ATTEMPT_S) + " seconds...\n", alert=1)
-            time.sleep(RECONNECT_ATTEMPT_S)
-            continue
-        dbg("done\n")
-
-
-def start_serial_service_background(serial_port, baud_rate, callback_recv):
-    # Launch socket connection in background in a separate thread
-    sockets_thread = Thread(target=start_serial_service, args=[serial_port, baud_rate, callback_recv] )
-    sockets_thread.daemon = True
-    sockets_thread.start()
-    sockets_thread.join()
+    def start_serial_service_background(self, serial_port, baud_rate, callback_recv):
+        # Launch socket connection in background in a separate thread
+        sockets_thread = Thread(target=self.__serial_service, args=[serial_port, baud_rate, callback_recv] )
+        sockets_thread.daemon = True
+        sockets_thread.start()
+        sockets_thread.join()
